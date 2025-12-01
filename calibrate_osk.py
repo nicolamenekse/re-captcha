@@ -11,6 +11,7 @@ Sonrasında:
 """
 
 import time
+import pyautogui
 from onscreen_keyboard import OnScreenKeyboard
 
 
@@ -32,19 +33,55 @@ def main():
 
     osk = OnScreenKeyboard()
 
-    # OSK'yi bulur; kalibrasyon eksikse seni zaten sorularla yönlendirecek ve kaydedecek
-    if not osk.start_osk():
+    # OSK'yi bul
+    if not osk.find_osk_window():
         print("\n✗ OSK bulunamadı. Lütfen 'Ekran Klavyesi'ni açıp tekrar dene.")
         return
 
-    # Eğer kalibrasyon zaten varsa, kullanıcıya bilgi ver
-    if osk.key_positions:
-        print(f"\n✓ Mevcut kalibrasyon bulundu ({len(osk.key_positions)} tuş).")
-        print("Yeniden kalibre etmek istiyorsanız, 'osk_calibration.json' dosyasını silip tekrar çalıştırın.")
-    else:
-        print("\n✓ Kalibrasyon tamamlandı (ve kaydedildi).")
+    print("✓ Ekran klavyesi bulundu (manuel açık)")
     
-    print("\nArtık oyun içi otomatik çözüm için doğrudan 'python auto_solution.py' çalıştırabilirsin.")
+    # Mevcut kalibrasyonu kontrol et
+    existing_keys = len(osk.key_positions) if osk.key_positions else 0
+    
+    if existing_keys > 0:
+        print(f"\n⚠ Mevcut kalibrasyon bulundu ({existing_keys} tuş).")
+        choice = input("Yeniden kalibre etmek istiyor musunuz? (e/h): ").strip().lower()
+        if choice != 'e':
+            print("Kalibrasyon atlandı.")
+            return
+        # Kalibrasyonu sıfırla
+        osk.key_positions = {}
+        print("Kalibrasyon sıfırlandı, yeni kalibrasyon başlıyor...\n")
+    
+    # Şimdi kalibrasyonu yap
+    print("=== EKRAN KLAVYESİ TUŞ KALİBRASYONU ===")
+    print("Lütfen ekran klavyesini görünür ve sabit bir yerde tut.")
+    print("Şimdi sırasıyla tuşların ÜZERİNE mouse'u getir ve ENTER'a bas.\n")
+    time.sleep(2)
+
+    try:
+        # 0-9 sırasıyla
+        for digit in range(10):
+            key = str(digit)
+            print(f"\n[{key}] tuşu için:")
+            print(f"  1. Mouse'u OSK'deki '{key}' tuşunun ÜZERİNE getir")
+            print(f"  2. Terminal'e dön ve ENTER'a bas")
+            input("  Hazır olduğunuzda ENTER'a basın...")
+            x, y = pyautogui.position()
+            osk.key_positions[key] = (x, y)
+            print(f"  ✓ '{key}' tuşu kaydedildi: ({x}, {y})")
+
+        print("\n✓ Tüm tuş pozisyonları kaydedildi.")
+        
+        # Kalibrasyonu kaydet
+        osk._save_calibration()
+        
+        print("\n✓ Kalibrasyon tamamlandı ve kaydedildi!")
+        print("Artık oyun içi otomatik çözüm için doğrudan 'python auto_solution.py' çalıştırabilirsin.")
+        
+    except Exception as e:
+        print(f"\n✗ Kalibrasyon hatası: {e}")
+        print("Lütfen tekrar deneyin.")
 
 
 if __name__ == "__main__":
