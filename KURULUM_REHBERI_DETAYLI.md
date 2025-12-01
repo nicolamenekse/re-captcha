@@ -128,33 +128,40 @@ Bu adımda, oyun ekranındaki önemli alanların koordinatlarını belirleyeceks
 
 ### Koordinat Kalibrasyonu
 
-1. PowerShell'de (yönetici olarak çalıştırmanız önerilir):
+1. **ÖNEMLİ:** Oyun penceresini açın ve **captcha ekranına** geçin (oyunda "captcha" yazarak tetikleyebilirsiniz)
+
+2. PowerShell'de (yönetici olarak çalıştırmanız önerilir):
    ```bash
    python setup_window.py
    ```
-2. Script size **4 alan** için koordinat belirlemenizi isteyecek:
+3. Script önce oyun penceresini bulacak, sonra size **4 alan** için koordinat belirlemenizi isteyecek:
 
    **a) OCR Alanı (Büyük Numara Okuma Alanı):**
    - Captcha ekranındaki **büyük numaranın** göründüğü çerçeve
-   - Mouse'u bu alanın **sol üst köşesine** getirin ve **SPACE** tuşuna basın
-   - Sonra **sağ alt köşesine** getirin ve **SPACE** tuşuna basın
+   - Mouse'u bu alanın **sol üst köşesine** getirin
+   - Terminal'e dönüp **ENTER** tuşuna basın
+   - Sonra **sağ alt köşesine** getirin ve tekrar **ENTER** tuşuna basın
 
    **b) Input Field (Yazılacak Alan):**
    - Captcha numarasının **yazılacağı** metin kutusu
-   - Mouse'u bu alanın **sol üst köşesine** getirin ve **SPACE** tuşuna basın
-   - Sonra **sağ alt köşesine** getirin ve **SPACE** tuşuna basın
+   - Mouse'u bu alanın **sol üst köşesine** getirin
+   - Terminal'e dönüp **ENTER** tuşuna basın
+   - Sonra **sağ alt köşesine** getirin ve tekrar **ENTER** tuşuna basın
 
    **c) Confirm Button (Onay Butonu):**
    - Captcha'yı **onaylamak için tıklanacak** buton
-   - Mouse'u bu butonun **sol üst köşesine** getirin ve **SPACE** tuşuna basın
-   - Sonra **sağ alt köşesine** getirin ve **SPACE** tuşuna basın
+   - Mouse'u bu butonun **sol üst köşesine** getirin
+   - Terminal'e dönüp **ENTER** tuşuna basın
+   - Sonra **sağ alt köşesine** getirin ve tekrar **ENTER** tuşuna basın
 
-   **d) Captcha Trigger Input (Chat Metin Kutusu):**
+   **d) Captcha Trigger Input (Chat Metin Kutusu - Opsiyonel):**
    - Oyun içinde **"captcha" yazılacak** chat metin kutusu
-   - Mouse'u bu alanın **sol üst köşesine** getirin ve **SPACE** tuşuna basın
-   - Sonra **sağ alt köşesine** getirin ve **SPACE** tuşuna basın
+   - Bu adımı atlamak için direkt ENTER'a basabilirsiniz
+   - Devam etmek için 'e' yazıp ENTER'a basın
+   - Mouse'u bu alanın **sol üst köşesine** getirin ve **ENTER** tuşuna basın
+   - Sonra **sağ alt köşesine** getirin ve tekrar **ENTER** tuşuna basın
 
-3. Tüm koordinatlar kaydedildikten sonra `config.json` dosyası otomatik güncellenecek
+4. Tüm koordinatlar kaydedildikten sonra `config.json` dosyası otomatik güncellenecek
 
 ### ✅ Kontrol
 
@@ -186,9 +193,9 @@ OSK, anti-cheat sistemini bypass etmek için kullanılan sanal klavyedir. Her tu
 2. Script size **0'dan 9'a kadar** her sayı için koordinat belirlemenizi isteyecek
 3. Her sayı için:
    - Mouse'u OSK'deki **ilgili sayı tuşunun üzerine** getirin
-   - **SPACE** tuşuna basın
+   - **Terminal'e dönüp ENTER tuşuna basın**
    - Koordinat kaydedilecek
-4. Tüm sayılar tamamlandığında `osk_calibration.json` dosyası güncellenecek
+4. Tüm sayılar tamamlandığında `osk_calibration.json` dosyası otomatik güncellenecek
 
 ### 6.3: Harf Tuşları ve Enter Kalibrasyonu
 
@@ -205,7 +212,7 @@ OSK, anti-cheat sistemini bypass etmek için kullanılan sanal klavyedir. Her tu
    - **Enter** (göndermek için)
 3. Her tuş için:
    - Mouse'u OSK'deki **ilgili tuşun üzerine** getirin
-   - **SPACE** tuşuna basın
+   - **Terminal'e dönüp ENTER tuşuna basın**
    - Koordinat kaydedilecek
 
 ### ✅ Kontrol

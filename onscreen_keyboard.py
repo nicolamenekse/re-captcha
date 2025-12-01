@@ -104,20 +104,20 @@ class OnScreenKeyboard:
         try:
             print("=== EKRAN KLAVYESİ TUŞ KALİBRASYONU ===")
             print("Lütfen ekran klavyesini görünür ve sabit bir yerde tut.")
-            print("Şimdi sırasıyla tuşların ÜZERİNE mouse'u getir, biz otomatik ölçelim.")
-            print("Her tuş için sana 3 saniye verilecek, mouse'u tuşun üstüne getir ve dokunma.")
+            print("Şimdi sırasıyla tuşların ÜZERİNE mouse'u getir ve ENTER'a bas.")
+            print("Her tuş için mouse'u tuşun üstüne getirip terminal'e dön ve ENTER'a bas.\n")
             time.sleep(2)
 
             # 0-9 sırasıyla
             for digit in range(10):
                 key = str(digit)
-                print(f"\n[{key}] tuşu için mouse'u tuşun ÜZERİNE getir.")
-                for c in range(3, 0, -1):
-                    print(f"  {c}...", end="\r")
-                    time.sleep(1)
+                print(f"\n[{key}] tuşu için:")
+                print(f"  1. Mouse'u OSK'deki '{key}' tuşunun ÜZERİNE getir")
+                print(f"  2. Terminal'e dön ve ENTER'a bas")
+                input("  Hazır olduğunuzda ENTER'a basın...")
                 x, y = pyautogui.position()
                 self.key_positions[key] = (x, y)
-                print(f"  ✓ '{key}' tuşu kaydedildi: ({x}, {y})   ")
+                print(f"  ✓ '{key}' tuşu kaydedildi: ({x}, {y})")
 
             print("\n✓ Tüm tuş pozisyonları kaydedildi.")
         except Exception as e:

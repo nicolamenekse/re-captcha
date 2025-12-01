@@ -47,13 +47,13 @@ def main():
 
     for key in keys_to_calibrate:
         label = "ENTER" if key == "enter" else key.upper()
-        print(f"\n[{key}] tuşu için mouse'u OSK üzerindeki '{label}' tuşunun ÜZERİNE getir.")
-        for c in range(3, 0, -1):
-            print(f"  {c}...", end="\r")
-            time.sleep(1)
+        print(f"\n[{key}] tuşu için:")
+        print(f"  1. Mouse'u OSK üzerindeki '{label}' tuşunun ÜZERİNE getir")
+        print(f"  2. Terminal'e dön ve ENTER'a bas")
+        input("  Hazır olduğunuzda ENTER'a basın...")
         x, y = pyautogui.position()
         osk.key_positions[key] = (x, y)
-        print(f"  ✓ '{key}' tuşu kaydedildi: ({x}, {y})   ")
+        print(f"  ✓ '{key}' tuşu kaydedildi: ({x}, {y})")
 
     # Mevcut kalibrasyonu kaydet
     # (OnScreenKeyboard içindeki private metoda erişiyoruz; Python için sorun değil)

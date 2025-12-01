@@ -49,11 +49,15 @@ copy osk_calibration.json.example osk_calibration.json
 python setup_window.py
 ```
 
+**ÖNEMLİ:** Oyun penceresini açın ve captcha ekranına geçin (oyunda "captcha" yazarak tetikleyebilirsiniz)
+
 Bu script ile şu alanların koordinatlarını belirleyeceksiniz:
-1. OCR alanı (büyük numara okuma alanı)
-2. Input field (yazılacak alan)
-3. Confirm button (onay butonu)
-4. Captcha trigger input (chat metin kutusu)
+1. OCR alanı (büyük numara okuma alanı) - Sol üst ve sağ alt köşeleri
+2. Input field (yazılacak alan) - Sol üst ve sağ alt köşeleri
+3. Confirm button (onay butonu) - Sol üst ve sağ alt köşeleri
+4. Captcha trigger input (chat metin kutusu - opsiyonel) - Sol üst ve sağ alt köşeleri
+
+**Her alan için:** Mouse'u köşeye getirin, terminal'e dönüp ENTER'a basın.
 
 ### 5. OSK Tuş Kalibrasyonu
 
@@ -67,7 +71,9 @@ python calibrate_osk.py
 python calibrate_osk_keys.py
 ```
 
-**Önemli:** OSK'yi manuel olarak açık tutun. Script çalışırken OSK açık olmalı.
+**Önemli:** 
+- OSK'yi manuel olarak açık tutun. Script çalışırken OSK açık olmalı.
+- Her tuş için: Mouse'u OSK'deki tuşun üzerine getirin, terminal'e dönüp ENTER'a basın.
 
 ## 💻 Kullanım
 
