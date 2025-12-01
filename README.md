@@ -19,10 +19,12 @@ Oyun ekranından screenshot alarak, belirli koordinatlardaki numaraları OCR ile
 
 ## 🚀 Kurulum
 
+> 📖 **Yeni bilgisayarda sıfırdan kurulum için:** [Detaylı Kurulum Rehberi](KURULUM_REHBERI_DETAYLI.md) dosyasına bakın!
+
 ### 1. Repository'yi Klonlayın
 
 ```bash
-git clone https://github.com/KULLANICI_ADI/re-captcha.git
+git clone https://github.com/nicolamenekse/re-captcha.git
 cd re-captcha
 ```
 
