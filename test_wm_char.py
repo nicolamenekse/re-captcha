@@ -149,7 +149,7 @@ if __name__ == "__main__":
         time.sleep(1)
     
     test_text = "1234"
-    window_name = "SRO_Client"
+    window_name = "SeaSRO2025"
     
     print(f"\nTest edilecek metin: '{test_text}'")
     print(f"Pencere adı: {window_name}")

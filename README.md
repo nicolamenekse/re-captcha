@@ -14,7 +14,7 @@ Oyun ekranından screenshot alarak, belirli koordinatlardaki numaraları OCR ile
 
 - Python 3.8 veya üzeri
 - Windows 10/11
-- SRO_Client oyunu
+- SeaSRO2025 oyunu
 - On-Screen Keyboard (OSK) - Windows ile birlikte gelir
 
 ## 🚀 Kurulum

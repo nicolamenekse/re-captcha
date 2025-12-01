@@ -15,7 +15,7 @@ except ImportError:
     WIN32_AVAILABLE = False
 
 
-def analyze_game_deep(game_folder_path, window_name="SRO_Client"):
+def analyze_game_deep(game_folder_path, window_name="SeaSRO2025"):
     """
     Oyunu derinlemesine analiz eder
     
@@ -230,11 +230,11 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Kullanım: python deep_game_analysis.py <oyun_klasörü_yolu> [pencere_adı]")
         print("\nÖrnek:")
-        print("  python deep_game_analysis.py \"C:\\Program Files\\SRO\" SRO_Client")
+        print("  python deep_game_analysis.py \"C:\\Program Files\\SRO\" SeaSRO2025")
         sys.exit(1)
     
     game_folder = sys.argv[1]
-    window_name = sys.argv[2] if len(sys.argv) > 2 else "SRO_Client"
+    window_name = sys.argv[2] if len(sys.argv) > 2 else "SeaSRO2025"
     
     print("\n⚠ ÖNEMLİ: Analiz için oyunun çalışıyor olması gerekiyor!")
     print("Oyunu açın ve 5 saniye bekleyin...\n")

@@ -30,7 +30,7 @@
         }
     },
     "game_settings": {
-        "window_name": "SRO_Client",
+        "window_name": "SeaSRO2025",
         "typing_delay_ms": 50,
         "click_delay_ms": 200,
         "wait_after_ocr_ms": 500,

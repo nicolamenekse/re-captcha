@@ -48,7 +48,7 @@ class AutoReCaptchaSolver:
         
         # Oyun penceresi yöneticisi
         game_settings = self.config.get("game_settings", {})
-        window_name = game_settings.get("window_name", "SRO_Client")
+        window_name = game_settings.get("window_name", "SeaSRO2025")
         self.window_manager = WindowManager(window_name)
         
         if window_name:
