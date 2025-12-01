@@ -32,24 +32,16 @@ def main():
         print(f"{i}...")
         time.sleep(1)
 
-    # 1) Merkez
-    print("\n[1] Metin kutusunun MERKEZİ")
-    print("Mouse'u, oyunda 'captcha' yazdığın kutunun ORTASINA getir.")
-    input("Hazırsan ENTER'a bas...")
-    center = pyautogui.position()
-    print(f"Merkez: ({center.x}, {center.y})")
-
-    # 2) Sol üst
-    print("\n[2] Metin kutusunun SOL ÜST köşesi")
-    print("Mouse'u kutunun SOL ÜST köşesine getir.")
-    input("Hazırsan ENTER'a bas...")
+    # Sol üst köşe
+    print("\n[1] CHAT METİN KUTUSU (Captcha tetikleme alanı)")
+    print("Mouse'u chat metin kutusunun SOL ÜST köşesine getirin...")
+    input("Hazır olduğunuzda ENTER'a basın...")
     top_left = pyautogui.position()
     print(f"Sol üst: ({top_left.x}, {top_left.y})")
 
-    # 3) Sağ alt
-    print("\n[3] Metin kutusunun SAĞ ALT köşesi")
-    print("Mouse'u kutunun SAĞ ALT köşesine getir.")
-    input("Hazırsan ENTER'a bas...")
+    # Sağ alt köşe
+    print("Şimdi chat metin kutusunun SAĞ ALT köşesine mouse'u getirin...")
+    input("Hazır olduğunuzda ENTER'a basın...")
     bottom_right = pyautogui.position()
     print(f"Sağ alt: ({bottom_right.x}, {bottom_right.y})")
 
