@@ -1,0 +1,45 @@
+{
+    "coordinates": {
+        "ocr_area": {
+            "x": 0,
+            "y": 0,
+            "width": 100,
+            "height": 50,
+            "description": "1 - Büyük numara okuma alanı (OCR)"
+        },
+        "input_field": {
+            "x": 0,
+            "y": 0,
+            "width": 100,
+            "height": 20,
+            "description": "2 - Input field (yazılacak alan)"
+        },
+        "confirm_button": {
+            "x": 0,
+            "y": 0,
+            "width": 100,
+            "height": 20,
+            "description": "3 - Confirm butonu (tıklanacak)"
+        },
+        "captcha_trigger_input": {
+            "x": 0,
+            "y": 0,
+            "width": 100,
+            "height": 20,
+            "description": "Captcha tetikleme metin kutusu (oyunda 'captcha' yazılan alan)"
+        }
+    },
+    "game_settings": {
+        "window_name": "SRO_Client",
+        "typing_delay_ms": 50,
+        "click_delay_ms": 200,
+        "wait_after_ocr_ms": 500,
+        "wait_after_typing_ms": 300
+    },
+    "ocr_settings": {
+        "preprocess": true,
+        "threshold": 127,
+        "invert": false
+    }
+}
+
