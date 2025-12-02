@@ -252,7 +252,7 @@ Tüm tuşların koordinatlarının kaydedildiğinden emin olun.
    - OSK ile numarayı yazmalı
    - Confirm butonuna tıklamalı
 
-### 7.3: Tam Akış Testi (Trigger + OCR + Yaz + Confirm)
+### 7.3: Tam Akış Testi (Trigger + OCR + Yaz + Confirm) - Tek Seferlik
 
 1. **SeaSRO2025** oyununu açın
 2. Oyun penceresini **aktif** tutun
@@ -268,11 +268,65 @@ Tüm tuşların koordinatlarının kaydedildiğinden emin olun.
    - OSK ile numarayı yazmalı
    - Confirm butonuna tıklamalı
 
+### 7.4: Tetik Yazı Alanı Kurulumu (Jangan / Samarkand vb.)
+
+Bu adım, ekranda belirli bir yazı (örneğin mini map bölgesinde **"Jangan"**, **"Samarkand"**) çıktığında otomatik captcha tetiklemek için kullanılır.
+
+1. Oyunda tetik yazının göründüğü bölgeyi bulun (örnek: mini map'in sağ üstündeki bölge).
+2. PowerShell'de (yönetici olarak):
+   ```bash
+   python setup_trigger_text_area.py
+   ```
+3. Script sizden **iki nokta** isteyecek:
+   - Tetik yazının bulunduğu alanın **sol üst köşesi**
+   - Aynı alanın **sağ alt köşesi**
+4. Mouse'u istenen noktaya götürüp **terminalde ENTER** ile onaylayın.
+5. `config.json` içinde `coordinates.trigger_text_area` alanı oluşacak.
+
+### 7.5: End Conversation Alanı Kurulumu (Opsiyonel)
+
+Bu adım, captcha çözüldükten sonra **dinlenme süresi (5 dakika)** içinde, belirli aralıklarla **"End conversation"** seçeneğine otomatik tıklamak içindir.
+
+1. Oyunda bir NPC ile konuşma penceresini açın, **"End conversation"** yazısı görünsün.
+2. PowerShell'de (yönetici olarak):
+   ```bash
+   python setup_end_conversation_area.py
+   ```
+3. Script sizden yine iki nokta isteyecek:
+   - "End conversation" yazısının bulunduğu alanın **sol üst köşesi**
+   - Aynı alanın **sağ alt köşesi**
+4. Mouse'u bu noktalara götürüp **ENTER** ile onaylayın.
+5. `config.json` içinde `coordinates.end_conversation_area` alanı oluşacak.
+
 ---
 
-## 🚀 ADIM 8: Sürekli Döngü Modunu Başlatma
+## 🚀 ADIM 8: Sürekli Otomatik Modlar
 
-Artık her şey hazır! Sürekli çalışan otomatik sistem:
+### 8.1: Yazıya Göre Otomatik Captcha (ÖNERİLEN YENİ MOD)
+
+Bu modda script, belirlediğiniz yazıları (ör: **"Jangan"**, **"Samarkand"**) ekranda görünce otomatik olarak captcha'yı tetikler ve çözer.
+
+1. **SeaSRO2025** oyununu açın, tetik yazıların çıkacağı bölge görünür olsun.
+2. OSK'yi açık tutun.
+3. PowerShell'de (yönetici olarak):
+   ```bash
+   python auto_solution.py watch "Jangan" "Samarkand" 20
+   ```
+   - `"Jangan"` ve `"Samarkand"`: Tetiklenecek yazılar (birden fazla yazı verebilirsiniz).
+   - `20`: Tetik alanını **20 saniyede bir** kontrol eder.
+4. Çalışma mantığı:
+   - Her 20 saniyede bir `trigger_text_area` içindeki yazıyı OCR ile okur.
+   - Yazılardan **herhangi biri** görünürse:
+     - Chat'e `"captcha"` yazıp ENTER'a basar (OSK ile).
+     - Captcha numarasını OCR ile okur.
+     - Input alanına OSK ile yazıp **confirm** butonuna tıklar.
+     - Eğer `end_conversation_area` tanımlıysa, **5 dakikalık dinlenme süresinde** her 60 saniyede bir bu alanda `"End conversation"` yazısını arar ve bulursa bir kez tıklar.
+   - Başarılı bir captcha çözümünden sonra **300 saniye (5 dakika)** bekler, sonra tekrar tetik yazıları izlemeye başlar.
+5. Durdurmak için: **Ctrl + C**
+
+### 8.2: Eski Zamanlama Modu (Süreye Göre, Yazısız) - Opsiyonel
+
+Eski mod, belirli aralıklarla **chat'e zorla "captcha" yazıp** çözer. Yazıya göre tetik modunu kullanıyorsanız genelde buna gerek kalmaz, yine de eski davranış için:
 
 1. **SeaSRO2025** oyununu açın
 2. Oyun penceresini **aktif** tutun
@@ -282,13 +336,10 @@ Artık her şey hazır! Sürekli çalışan otomatik sistem:
    python auto_solution.py full_loop 330
    ```
    (330 saniye = 5.5 dakika aralıkla çalışır)
-
 5. Script sürekli döngüde çalışacak:
    - Her 330 saniyede bir
    - Chat'e "captcha" yazacak
    - Captcha'yı okuyup çözecek
-   - Bekleyip tekrar edecek
-
 6. Durdurmak için: **Ctrl + C**
 
 ---
