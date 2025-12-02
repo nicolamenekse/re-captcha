@@ -83,8 +83,24 @@ class OCRReader:
         for (bbox, text_result, confidence) in results:
             if confidence > 0.5:  # Güven eşiği
                 text += text_result + " "
-        
+
         return text.strip()
+
+    def read_text_from_region(self, x, y, width, height, preprocess=True, threshold=127, invert=False):
+        """
+        Belirli bir bölgeden SERBEST METİN okur (sadece rakam değil).
+
+        Args:
+            x, y, width, height: Bölge koordinatları
+            preprocess: Ön işleme uygula
+            threshold: Eşik değeri
+            invert: Renkleri tersine çevir
+
+        Returns:
+            Okunan metin (string)
+        """
+        region = self.screenshot.capture_region(x, y, width, height)
+        return self.read_text_from_image(region, preprocess=preprocess, threshold=threshold, invert=invert)
     
     def read_number_from_region(self, x, y, width, height, preprocess=True, threshold=127, invert=False):
         """

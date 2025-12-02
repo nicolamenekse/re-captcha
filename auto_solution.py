@@ -168,6 +168,159 @@ class AutoReCaptchaSolver:
             print(f"\n✓ Final okunan numara: '{number}'")
 
         return number
+
+    # --------------------------------------------------------
+    #  YAZI TETİKLEYİCİ: Ekrandaki belirli yazıyı bekle
+    # --------------------------------------------------------
+    def wait_for_trigger_text(self, trigger_texts, check_interval: float = 2.0):
+        """
+        Ekranda belirli bir / birden fazla yazı görünene kadar BEKLER.
+
+        - config.coordinates.trigger_text_area alanını kullanır.
+        - Bu alandaki metni OCR ile okuyup, trigger_text içeriyorsa True döner.
+
+        Args:
+            trigger_texts: Aranacak yazı(lar) (ör: ['Captcha gerekli', 'Captcha aktif'])
+            check_interval: Her kontrol arasında beklenecek süre (saniye)
+        """
+        # Tek string geldiyse listeye çevir
+        if isinstance(trigger_texts, str):
+            trigger_texts = [trigger_texts]
+
+        # Boşları temizle
+        trigger_texts = [t.strip() for t in trigger_texts if t and t.strip()]
+
+        if not trigger_texts:
+            print("✗ trigger_texts boş olamaz!")
+            return False
+
+        coords = self.config.get("coordinates", {})
+        area = coords.get("trigger_text_area", {})
+
+        if not area or area.get("width", 0) <= 0 or area.get("height", 0) <= 0:
+            print("✗ trigger_text_area koordinatları config.json içinde tanımlı değil.")
+            print("  → Önce: python setup_trigger_text_area.py")
+            return False
+
+        x = area.get("x", 0)
+        y = area.get("y", 0)
+        width = area.get("width", 200)
+        height = area.get("height", 50)
+
+        print("=" * 60)
+        print("TETİK YAZI BEKLEME MODU")
+        print("=" * 60)
+        print("Aranan yazılar:")
+        for t in trigger_texts:
+            print(f"  - '{t}'")
+        print(f"Tetik alanı (config): ({x}, {y}, {width}x{height})")
+        print(f"Kontrol aralığı: {check_interval} saniye")
+        print("Durdurmak için: Ctrl + C")
+
+        # NOT: setup_trigger_text_area.py koordinatları DOĞRUDAN EKRAN KOORDİNATI olarak kaydediyor.
+        # Bu yüzden burada ekstra client_rect ofseti EKLEMİYORUZ.
+        screen_x, screen_y = x, y
+        print(f"Ekran koordinatları (doğrudan config): ({screen_x}, {screen_y})")
+
+        debug_saved = False
+        try:
+            while True:
+                try:
+                    # 1) Config'teki OCR ayarlarıyla dene
+                    ocr_settings = self.config.get("ocr_settings", {})
+                    preprocess = ocr_settings.get("preprocess", True)
+                    threshold = ocr_settings.get("threshold", 127)
+                    invert = ocr_settings.get("invert", False)
+
+                    text = self.ocr.read_text_from_region(
+                        screen_x,
+                        screen_y,
+                        width,
+                        height,
+                        preprocess=preprocess,
+                        threshold=threshold,
+                        invert=invert,
+                    )
+
+                    # 2) Hâlâ boşsa, tetik alanı için özel birkaç kombinasyon daha dene
+                    if not text:
+                        for test_threshold in [100, 150, 180]:
+                            text = self.ocr.read_text_from_region(
+                                screen_x,
+                                screen_y,
+                                width,
+                                height,
+                                preprocess=True,
+                                threshold=test_threshold,
+                                invert=False,
+                            )
+                            if text:
+                                break
+
+                    if not text:
+                        # Invert ile dene (yazı rengi/zeminine göre bazen işe yarıyor)
+                        for test_threshold in [127, 100, 150]:
+                            text = self.ocr.read_text_from_region(
+                                screen_x,
+                                screen_y,
+                                width,
+                                height,
+                                preprocess=True,
+                                threshold=test_threshold,
+                                invert=True,
+                            )
+                            if text:
+                                break
+
+                    # 3) Hâlâ boşsa, küçük yazılar için özel: resmi büyüt ve ham OCR yap
+                    if not text:
+                        try:
+                            import cv2
+                            import numpy as np  # noqa: F401 - gelecekte kullanılabilir
+
+                            region_img = self.screenshot.capture_region(screen_x, screen_y, width, height)
+                            # Yazıyı daha okunur yapmak için ölçek büyüt
+                            scaled = cv2.resize(region_img, None, fx=3.0, fy=3.0, interpolation=cv2.INTER_CUBIC)
+
+                            results = self.ocr.reader.readtext(scaled)
+                            collected = []
+                            for (_bbox, t_res, conf) in results:
+                                if conf > 0.3:
+                                    collected.append(t_res)
+                            text = " ".join(collected).strip()
+                        except Exception as e:
+                            print(f"✗ Küçük yazı özel OCR hatası (yoksayılıyor): {e}")
+                except Exception as e:
+                    print(f"✗ OCR tetik alanı okuma hatası: {e}")
+                    text = ""
+
+                normalized = (text or "").strip().lower()
+                targets_norm = [t.lower() for t in trigger_texts]
+
+                print("-" * 60)
+                print(f"Tetik alanında okunan: '{text}'")
+
+                # Eğer hiç okuyamıyorsak, bir kere debug ekran görüntüsü kaydedelim
+                if not text and not debug_saved:
+                    try:
+                        print("⚠ Tetik yazı okunamadı, debug görüntü kaydediliyor...")
+                        region = self.screenshot.capture_region(screen_x, screen_y, width, height)
+                        self.screenshot.save_screenshot(region, "debug_trigger_text_area.png")
+                        print("Debug görüntü: debug_trigger_text_area.png")
+                        print(f"Koordinatlar: ({screen_x}, {screen_y}, {width}x{height})")
+                        debug_saved = True
+                    except Exception as e:
+                        print(f"Debug görüntü kaydedilemedi: {e}")
+
+                for target_norm in targets_norm:
+                    if target_norm and target_norm in normalized:
+                        print(f"✓ Tetik yazı bulundu! (eşleşen: '{target_norm}')")
+                        return True
+
+                time.sleep(check_interval)
+        except KeyboardInterrupt:
+            print("\n\nKullanıcı tarafından durduruldu (Ctrl + C).")
+            return False
     
     def try_all_input_methods(self, text):
         """
@@ -642,15 +795,79 @@ class AutoReCaptchaSolver:
         except KeyboardInterrupt:
             print("\n\nKullanıcı tarafından durduruldu (Ctrl + C).")
 
+    def watch_and_solve_on_text(
+        self,
+        trigger_texts,
+        check_interval: float = 2.0,
+        wait_after_trigger: float = 2.0,
+        rest_after_success: float = 300.0,
+    ):
+        """
+        YENİ MOD:
+        - Ekranda belirli bir / birden fazla yazı (trigger_texts) belirlediğin alanda çıkana kadar bekler.
+        - Yazı görünce:
+            1) Chat'e 'captcha' yaz + ENTER (OSK)
+            2) Kısa bekle (captcha penceresinin açılması için)
+            3) OCR + yaz + confirm
+
+        Sürekli döngü halinde tekrarlar (Ctrl + C ile durdur).
+        Her başarılı captcha çözümünden sonra rest_after_success kadar bekler.
+        """
+        # Tek string geldiyse listeye çevir
+        if isinstance(trigger_texts, str):
+            trigger_texts = [trigger_texts]
+
+        # Boşları temizle
+        trigger_texts = [t.strip() for t in trigger_texts if t and t.strip()]
+
+        print("=" * 60)
+        print("YAZIYA GÖRE OTOMATİK CAPTCHA ÇÖZÜM MODU")
+        print("=" * 60)
+        print("Tetik yazılar:")
+        for t in trigger_texts:
+            print(f"  - '{t}'")
+        print(f"Kontrol aralığı: {check_interval} saniye")
+        print(f"Başarılı çözüm sonrası bekleme: {rest_after_success} saniye")
+        print("Durdurmak için: Ctrl + C")
+
+        iteration = 0
+        try:
+            while True:
+                iteration += 1
+                print("\n" + "-" * 60)
+                print(f"YAZI TETİK İTERASYON #{iteration}")
+                print("-" * 60)
+
+                found = self.wait_for_trigger_text(trigger_texts, check_interval=check_interval)
+                if not found:
+                    print("Tetik yazı bekleme iptal edildi veya hata oluştu.")
+                    break
+
+                # Yazı bulundu → tam akışı çalıştır
+                success = self.solve_full_once(wait_after_trigger=wait_after_trigger)
+                if not success:
+                    print("Bu tetikte tam akış başarısız olabilir (captcha tetiklenemedi veya OCR okuyamadı).")
+                    # Başarısız durumda kısa bekleme, sonra tekrar tetik beklemeye dön
+                    cooldown = 5.0
+                    print(f"\nBaşarısız tetik için kısa bekleme: {cooldown} saniye...")
+                    time.sleep(cooldown)
+                else:
+                    # Başarılı captcha çözümü → uzun dinlenme süresi
+                    print(f"\n✓ Captcha başarıyla çözüldü. Şimdi {rest_after_success} saniye dinleniyor...")
+                    time.sleep(rest_after_success)
+        except KeyboardInterrupt:
+            print("\n\nKullanıcı tarafından durduruldu (Ctrl + C).")
+
 
 if __name__ == "__main__":
     solver = AutoReCaptchaSolver()
 
-    # Basit CLI: python auto_solution.py        -> 1 kez
-    #           python auto_solution.py loop    -> sonsuz döngü
-    #           python auto_solution.py loop 3  -> 3 sn aralıkla döngü
-    #           python auto_solution.py full    -> tek sefer tam akış
-    #           python auto_solution.py full_loop 330 -> ~5.5 dakikada bir tam akış
+    # Basit CLI:
+    #   python auto_solution.py                    -> 1 kez (ekranda captcha varsa çöz)
+    #   python auto_solution.py loop [interval]    -> sadece çözüm döngüsü (captcha zaten ekrandaysa)
+    #   python auto_solution.py full               -> tek sefer tam akış (captcha'yı tetikle + çöz)
+    #   python auto_solution.py full_loop [saniye] -> süreye göre tam akış döngüsü (eski davranış)
+    #   python auto_solution.py watch YAZI1 [YAZI2 ...] [interval] -> ekrandaki yazıya göre (birden fazla yazı) tam akış tetikleme
     import sys
 
     if len(sys.argv) > 1 and sys.argv[1].lower() == "loop":
@@ -663,9 +880,29 @@ if __name__ == "__main__":
         # Tek sefer tam akış: trigger + OCR + yaz + confirm
         solver.solve_full_once()
     elif len(sys.argv) > 1 and sys.argv[1].lower() == "full_loop":
-        # Sürekli tam akış döngüsü
+        # Sürekli tam akış döngüsü (süreye göre)
         interval = float(sys.argv[2]) if len(sys.argv) > 2 else 330.0
         solver.solve_full_loop(interval=interval)
+    elif len(sys.argv) > 1 and sys.argv[1].lower() == "watch":
+        # Ekrandaki yazıya göre tetikleme (birden fazla yazı destekli)
+        # Örnek:
+        #   python auto_solution.py watch "YAZI1" "YAZI2" 2
+        #   → 'YAZI1' VEYA 'YAZI2' görünürse tetikler, 2 sn aralıkla kontrol eder
+        args = sys.argv[2:]
+        if not args:
+            trigger_texts = ["captcha"]
+            interval = 2.0
+        else:
+            # Son argüman sayıya çevrilebiliyorsa interval olarak yorumla
+            try:
+                interval_candidate = float(args[-1])
+                interval = interval_candidate
+                trigger_texts = args[:-1] if len(args) > 1 else ["captcha"]
+            except ValueError:
+                interval = 2.0
+                trigger_texts = args
+
+        solver.watch_and_solve_on_text(trigger_texts=trigger_texts, check_interval=interval)
     else:
         solver.solve_once()
 
