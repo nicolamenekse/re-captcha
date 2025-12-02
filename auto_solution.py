@@ -195,8 +195,11 @@ class AutoReCaptchaSolver:
         # Ekran koordinatları doğrudan config'ten
         screen_x, screen_y = x, y
 
-        # OCR ile metni oku
+        text = ""
+        debug_saved = False
+
         try:
+            # 1) Varsayılan ayarlarla dene
             text = self.ocr.read_text_from_region(
                 screen_x,
                 screen_y,
@@ -206,9 +209,64 @@ class AutoReCaptchaSolver:
                 threshold=127,
                 invert=False,
             )
+
+            # 2) Farklı threshold değerleri ile dene
+            if not text:
+                for test_threshold in [100, 150, 180]:
+                    text = self.ocr.read_text_from_region(
+                        screen_x,
+                        screen_y,
+                        width,
+                        height,
+                        preprocess=True,
+                        threshold=test_threshold,
+                        invert=False,
+                    )
+                    if text:
+                        break
+
+            # 3) Invert ile dene
+            if not text:
+                for test_threshold in [127, 100, 150]:
+                    text = self.ocr.read_text_from_region(
+                        screen_x,
+                        screen_y,
+                        width,
+                        height,
+                        preprocess=True,
+                        threshold=test_threshold,
+                        invert=True,
+                    )
+                    if text:
+                        break
+
+            # 4) Çok küçük yazılar için: bölgeyi büyüt ve ham OCR yap
+            if not text:
+                import cv2
+
+                region_img = self.screenshot.capture_region(screen_x, screen_y, width, height)
+                scaled = cv2.resize(region_img, None, fx=3.0, fy=3.0, interpolation=cv2.INTER_CUBIC)
+                results = self.ocr.reader.readtext(scaled)
+                collected = []
+                for (_bbox, t_res, conf) in results:
+                    if conf > 0.3:
+                        collected.append(t_res)
+                text = " ".join(collected).strip()
+
         except Exception as e:
             print(f"✗ End conversation alanı OCR hatası (yoksayılıyor): {e}")
-            return
+            text = ""
+
+        # Hâlâ boşsa debug için bir kez görüntü kaydet
+        if not text and not debug_saved:
+            try:
+                region = self.screenshot.capture_region(screen_x, screen_y, width, height)
+                self.screenshot.save_screenshot(region, "debug_end_conversation.png")
+                print("[EndConv] ⚠ Yazı okunamadı, debug_end_conversation.png kaydedildi.")
+                print(f"[EndConv] Koordinatlar: ({screen_x}, {screen_y}, {width}x{height})")
+                debug_saved = True
+            except Exception as e:
+                print(f"[EndConv] Debug görüntü kaydedilemedi: {e}")
 
         normalized = (text or "").strip().lower()
         target_norm = (target_text or "").strip().lower()
