@@ -170,6 +170,66 @@ class AutoReCaptchaSolver:
         return number
 
     # --------------------------------------------------------
+    #  END CONVERSATION YARDIMCI FONKSİYONU
+    # --------------------------------------------------------
+    def check_and_click_end_conversation(self, target_text: str = "end conversation"):
+        """
+        Config.teki end_conversation_area alanında verilen yazıyı arar,
+        bulunursa o alanın ortasına bir kere tıklar.
+
+        Bu fonksiyon, dinlenme süresi (rest_after_success) içinde
+        periyodik olarak çağrılır.
+        """
+        coords = self.config.get("coordinates", {})
+        area = coords.get("end_conversation_area", {})
+
+        if not area or area.get("width", 0) <= 0 or area.get("height", 0) <= 0:
+            # Tanımlı değilse sessizce çık
+            return
+
+        x = area.get("x", 0)
+        y = area.get("y", 0)
+        width = area.get("width", 150)
+        height = area.get("height", 40)
+
+        # Ekran koordinatları doğrudan config'ten
+        screen_x, screen_y = x, y
+
+        # OCR ile metni oku
+        try:
+            text = self.ocr.read_text_from_region(
+                screen_x,
+                screen_y,
+                width,
+                height,
+                preprocess=True,
+                threshold=127,
+                invert=False,
+            )
+        except Exception as e:
+            print(f"✗ End conversation alanı OCR hatası (yoksayılıyor): {e}")
+            return
+
+        normalized = (text or "").strip().lower()
+        target_norm = (target_text or "").strip().lower()
+
+        print(f"[EndConv] Alanda okunan: '{text}'")
+
+        if target_norm and target_norm in normalized:
+            # Ortasına tıkla
+            center_x = screen_x + width // 2
+            center_y = screen_y + height // 2
+            try:
+                print(f"[EndConv] '{target_text}' bulundu, tıklanıyor: ({center_x}, {center_y})")
+                pyautogui.FAILSAFE = False
+                pyautogui.moveTo(center_x, center_y, duration=0.1)
+                time.sleep(0.1)
+                pyautogui.click(center_x, center_y)
+                time.sleep(0.2)
+            except Exception as e:
+                print(f"[EndConv] Tıklama hatası (yoksayılıyor): {e}")
+
+    # --------------------------------------------------------
     #  YAZI TETİKLEYİCİ: Ekrandaki belirli yazıyı bekle
     # --------------------------------------------------------
     def wait_for_trigger_text(self, trigger_texts, check_interval: float = 2.0):
@@ -854,7 +914,21 @@ class AutoReCaptchaSolver:
                 else:
                     # Başarılı captcha çözümü → uzun dinlenme süresi
                     print(f"\n✓ Captcha başarıyla çözüldü. Şimdi {rest_after_success} saniye dinleniyor...")
-                    time.sleep(rest_after_success)
+
+                    # Dinlenme süresi boyunca her 60 saniyede bir 'End conversation' alanını kontrol et
+                    check_interval_end_conv = 60.0
+                    start_rest = time.time()
+                    while time.time() - start_rest < rest_after_success:
+                        # 'End conversation' yazısı varsa tıkla
+                        self.check_and_click_end_conversation(target_text="end conversation")
+
+                        remaining = rest_after_success - (time.time() - start_rest)
+                        if remaining <= 0:
+                            break
+
+                        sleep_time = min(check_interval_end_conv, max(1.0, remaining))
+                        print(f"[EndConv] Sonraki kontrol için {sleep_time:.0f} saniye bekleniyor...")
+                        time.sleep(sleep_time)
         except KeyboardInterrupt:
             print("\n\nKullanıcı tarafından durduruldu (Ctrl + C).")
 
